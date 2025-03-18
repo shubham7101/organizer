@@ -1,0 +1,19 @@
+log_file: "logs/app.log"
+rules:
+  - name: "Organize Documents"
+    locations:
+      - "/home/user/Documents"
+      - "/home/user/Desktop"
+    filters:
+      extensions: ["pdf", "docx", "txt"]
+    action: !move "/home/user/Organized/Documents" # ✅ Correct format for Move action
+
+  - name: "Organize Images"
+    locations:
+      - "/data/data/com.termux/files/home/storage/downloads/i"
+    recursive: true
+    filters:
+      extensions: ["png", "jpg", "jpeg"]
+      name:
+        contains: ["car"]
+    action: !move "/data/data/com.termux/files/home/storage/downloads/Images"

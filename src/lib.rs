@@ -1,0 +1,70 @@
+pub mod filters;
+pub mod actions;
+pub mod config;
+
+use walkdir::{WalkDir};
+
+pub fn run(config: config::Config) {
+    for rule in config.rules {
+        process_rule(rule)
+    }
+}
+
+fn process_rule(rule: config::Rule) {
+    let mut matches = vec![];
+    let filters = process_filters(rule.filters);
+
+    for location in &rule.locations {
+        let walker = if rule.recursive {
+            WalkDir::new(location)
+        } else {
+            WalkDir::new(location).max_depth(rule.max_depth.unwrap_or(1))
+        };
+
+        for entry in walker.into_iter().filter_map(Result::ok) {
+            let file_path = entry.path();
+
+            if file_path.is_dir() {
+                continue;
+            }
+
+            let mut filters_result = false;
+            for f in &filters {
+                filters_result = f.matches(file_path);
+            }
+            if !filters_result {
+                continue
+            }
+
+            matches.push(file_path.to_path_buf());
+        }
+    }
+
+    println!("{0} : ",rule.name);
+
+    if matches.is_empty() {
+        println!("No matching files found.");
+        return
+    }
+
+    println!("{matches:#?}");
+}
+
+fn process_filters(filters_cfg: config::Filters) -> Vec<Box<dyn filters::Filter>> {
+    let mut filters: Vec<Box<dyn filters::Filter>> = Vec::new();
+
+    if let Some(exts) = filters_cfg.extensions {
+        filters.push(Box::new(filters::ExtensionFilter::new(exts)));
+    }
+
+    if let Some(name_filter) = filters_cfg.name {
+        filters.push(Box::new(filters::NameFilter::new(
+            name_filter.starts_with,
+            name_filter.ends_with,
+            name_filter.contains,
+            name_filter.case_sensitive,
+        )));
+    }
+
+    filters
+}
