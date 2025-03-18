@@ -6,28 +6,29 @@ pub trait Filter {
 
 pub struct ExtensionFilter {
     extensions: Vec<String>,
+    negate: bool,
 }
 
 impl ExtensionFilter {
-    pub fn new(extensions: Vec<String>) -> Self {
-        Self{ extensions }
+    pub fn new(extensions: Vec<String>, negate: bool) -> Self {
+        Self{ extensions, negate }
     }
 }
 
 impl Filter for ExtensionFilter {
     fn matches(&self, path: &Path) -> bool {
         let file_ext = match path.extension() {
-            Some(ext) => ext.to_str(),
-            None =>  return false,
+            Some(ext) => ext.to_str().unwrap_or(""),
+            None =>  return self.negate,
         };
-        if let Some(ext_str) = file_ext {
-            for ext in &self.extensions {
-                if ext_str == ext {
-                    return true
-                }
-            }
+
+        let is_match = self.extensions.iter().any(|ext| ext == file_ext);
+
+        if self.negate {
+            !is_match // Invert the result
+        } else {
+            is_match
         }
-        false
     }
 }
 
@@ -113,12 +114,22 @@ mod tests {
 
     #[test]
     fn test_extension_filter_matches() {
-        let filter = ExtensionFilter::new(vec!["txt".to_string(), "rs".to_string()]);
+        let filter = ExtensionFilter::new(vec!["txt".to_string(), "rs".to_string()], false);
 
         assert!(filter.matches(Path::new("file.txt")));
         assert!(filter.matches(Path::new("code.rs")));
         assert!(!filter.matches(Path::new("image.png")));
         assert!(!filter.matches(Path::new("no_extension")));
+    }
+
+    #[test]
+    fn test_not_extension_filter_matches() {
+        let filter = ExtensionFilter::new(vec!["txt".to_string()], true);
+
+        assert!(!filter.matches(Path::new("file.txt")));
+        assert!(filter.matches(Path::new("code.rs")));
+        assert!(filter.matches(Path::new("image.png")));
+        assert!(filter.matches(Path::new("no_extension")));
     }
 
     #[test]

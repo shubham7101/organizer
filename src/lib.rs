@@ -54,7 +54,9 @@ fn process_filters(filters_cfg: config::Filters) -> Vec<Box<dyn filters::Filter>
     let mut filters: Vec<Box<dyn filters::Filter>> = Vec::new();
 
     if let Some(exts) = filters_cfg.extensions {
-        filters.push(Box::new(filters::ExtensionFilter::new(exts)));
+        filters.push(Box::new(filters::ExtensionFilter::new(exts,false)));
+    } else if let Some(not_exts) = filters_cfg.not_extensions {
+        filters.push(Box::new(filters::ExtensionFilter::new(not_exts,true)))
     }
 
     if let Some(name_filter) = filters_cfg.name {
