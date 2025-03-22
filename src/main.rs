@@ -12,5 +12,5 @@ fn main() {
 
     println!("{config:#?}");
 
-    run(config);
+    run(&config);
 }

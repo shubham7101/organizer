@@ -2,17 +2,18 @@ pub mod filters;
 pub mod actions;
 pub mod config;
 
+use crate::config::Action::{ Move };
 use walkdir::{WalkDir};
 
-pub fn run(config: config::Config) {
-    for rule in config.rules {
-        process_rule(rule)
+pub fn run(config: &config::Config) {
+    for rule in config.rules.iter() {
+        process_rule(&rule);
     }
 }
 
-fn process_rule(rule: config::Rule) {
+fn process_rule(rule: &config::Rule) {
     let mut matches = vec![];
-    let filters = process_filters(rule.filters);
+    let filters = process_filters(&rule.filters);
 
     for location in &rule.locations {
         let walker = if rule.recursive {
@@ -31,10 +32,9 @@ fn process_rule(rule: config::Rule) {
             let mut filters_result = false;
             for f in &filters {
                 filters_result = f.matches(file_path);
+                if !filters_result { break }
             }
-            if !filters_result {
-                continue
-            }
+            if !filters_result { continue }
 
             matches.push(file_path.to_path_buf());
         }
@@ -50,22 +50,17 @@ fn process_rule(rule: config::Rule) {
     println!("{matches:#?}");
 }
 
-fn process_filters(filters_cfg: config::Filters) -> Vec<Box<dyn filters::Filter>> {
+fn process_filters(filters_cfg: &config::Filters) -> Vec<Box<dyn filters::Filter + '_>> {
     let mut filters: Vec<Box<dyn filters::Filter>> = Vec::new();
 
-    if let Some(exts) = filters_cfg.extensions {
+    if let Some(ref exts) = filters_cfg.extensions {
         filters.push(Box::new(filters::ExtensionFilter::new(exts,false)));
-    } else if let Some(not_exts) = filters_cfg.not_extensions {
-        filters.push(Box::new(filters::ExtensionFilter::new(not_exts,true)))
+    } else if let Some(ref not_exts) = filters_cfg.not_extensions {
+        filters.push(Box::new(filters::ExtensionFilter::new(not_exts,true)));
     }
 
-    if let Some(name_filter) = filters_cfg.name {
-        filters.push(Box::new(filters::NameFilter::new(
-            name_filter.starts_with,
-            name_filter.ends_with,
-            name_filter.contains,
-            name_filter.case_sensitive,
-        )));
+    if let Some(ref name_filter) = filters_cfg.name {
+        filters.push(Box::new(filters::NameFilter::new(name_filter)));
     }
 
     filters
