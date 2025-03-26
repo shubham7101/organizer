@@ -3,8 +3,8 @@ pub mod config;
 pub mod filters;
 pub mod utils;
 
-use walkdir::WalkDir;
 use crate::actions::Action;
+use walkdir::WalkDir;
 
 pub fn run(config: &config::Config) {
     for rule in config.rules.iter() {
@@ -73,7 +73,7 @@ fn parse_filters(filters_cfg: &config::Filters) -> Vec<Box<dyn filters::Filter +
 
     if let Some(ref name_filter) = filters_cfg.name {
         filters.push(Box::new(filters::NameFilter::new(
-           name_filter.starts_with.as_ref(),
+            name_filter.starts_with.as_ref(),
             name_filter.ends_with.as_ref(),
             name_filter.contains.as_ref(),
         )));
@@ -84,7 +84,7 @@ fn parse_filters(filters_cfg: &config::Filters) -> Vec<Box<dyn filters::Filter +
 
 fn parse_action(action_cfg: &config::Action) -> impl actions::Action + '_ {
     return match action_cfg {
-        config::Action::Move(move_cfg) => actions::MoveAction::new(move_cfg),
-        _ => todo!()
-    }
+        config::Action::Move(move_cfg) => actions::MoveAction::new(&move_cfg.destination, move_cfg.over_ride),
+        _ => todo!(),
+    };
 }

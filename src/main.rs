@@ -1,5 +1,5 @@
-use std::process;
 use organizer::{config, run};
+use std::process;
 
 fn main() {
     let config = match config::Config::load("config.yaml") {
@@ -7,7 +7,7 @@ fn main() {
         Err(err) => {
             eprintln!("Error: {}", err);
             process::exit(1);
-        },
+        }
     };
 
     println!("{config:#?}");

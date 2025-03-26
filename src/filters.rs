@@ -44,7 +44,11 @@ impl<'a> NameFilter<'a> {
         ends_with_filter: Option<&'a Vec<String>>,
         contains_filter: Option<&'a Vec<String>>,
     ) -> Self {
-        Self { starts_with_filter, ends_with_filter, contains_filter }
+        Self {
+            starts_with_filter,
+            ends_with_filter,
+            contains_filter,
+        }
     }
 
     fn starts_with(&self, file_name: &str) -> bool {

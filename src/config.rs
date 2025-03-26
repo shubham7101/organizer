@@ -53,6 +53,8 @@ pub enum Target {
 pub struct NameFilterConfig {
     #[serde(default)]
     pub case_sensitive: bool,
+    #[serde(default)]
+    pub match_any: bool,
     pub starts_with: Option<Vec<String>>,
     pub ends_with: Option<Vec<String>>,
     pub contains: Option<Vec<String>>,
