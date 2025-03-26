@@ -10,4 +10,5 @@ rules:
         contains: ["car"]
     action:
       type: move
-      destination: "/storage/emulated/0"
+      destination: "/data/data/com.termux/files/home/storage/downloads/Images"
+      over_ride: true

@@ -9,6 +9,7 @@ use std::time::UNIX_EPOCH;
 pub struct FileMetaData {
     pub path: PathBuf,
     pub file_name: String,
+    pub file_stem: String,
     pub extension: Option<String>,
     pub is_dir: bool,
     pub is_file: bool,
@@ -29,6 +30,10 @@ impl FileMetaData {
 
         let absolute_path = fs::canonicalize(path).unwrap_or_else(|_| path.to_path_buf());
         let file_name = path
+            .file_name()
+            .and_then(|os_str| os_str.to_str())
+            .map_or_else(|| "".to_string(), String::from);
+        let file_stem = path
             .file_stem()
             .and_then(|os_str| os_str.to_str())
             .map_or_else(|| "".to_string(), String::from);
@@ -51,6 +56,7 @@ impl FileMetaData {
         Ok(Self {
             path: absolute_path,
             file_name,
+            file_stem,
             extension,
             is_dir: file_type.is_dir(),
             is_file: file_type.is_file(),

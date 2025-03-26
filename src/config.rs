@@ -68,6 +68,8 @@ pub enum Action {
 #[derive(Debug, Deserialize)]
 pub struct MoveConfig {
     pub destination: String,
+    #[serde(default)]
+    pub over_ride: bool,
 }
 
 #[derive(Debug, Deserialize)]

@@ -4,6 +4,7 @@ pub mod filters;
 pub mod utils;
 
 use walkdir::WalkDir;
+use crate::actions::Action;
 
 pub fn run(config: &config::Config) {
     for rule in config.rules.iter() {
@@ -12,7 +13,8 @@ pub fn run(config: &config::Config) {
 }
 
 fn process_rule(rule: &config::Rule) {
-    let filters = process_filters(&rule.filters);
+    let filters = parse_filters(&rule.filters);
+    let action = parse_action(&rule.action);
     let mut matches = vec![];
 
     for location in &rule.locations {
@@ -50,10 +52,17 @@ fn process_rule(rule: &config::Rule) {
         return;
     }
 
-    println!("{matches:#?}");
+    if let Err(errors) = action.execute(&matches) {
+        println!("Action completed with errors : ");
+        for error in errors {
+            eprintln!("Error: {}", error);
+        }
+        return;
+    }
+    println!("Action completed successfully.")
 }
 
-fn process_filters(filters_cfg: &config::Filters) -> Vec<Box<dyn filters::Filter + '_>> {
+fn parse_filters(filters_cfg: &config::Filters) -> Vec<Box<dyn filters::Filter + '_>> {
     let mut filters: Vec<Box<dyn filters::Filter>> = Vec::new();
 
     if let Some(ref exts) = filters_cfg.extensions {
@@ -73,9 +82,9 @@ fn process_filters(filters_cfg: &config::Filters) -> Vec<Box<dyn filters::Filter
     filters
 }
 
-//fn process_action(action_cfg: config::Action) -> impl actions::Action {
-//    return match action_cfg {
-//        Move(path) => actions::MoveAction::new(path.as_str()),
-//        _ => todo!()
-//    }
-//}
+fn parse_action(action_cfg: &config::Action) -> impl actions::Action + '_ {
+    return match action_cfg {
+        config::Action::Move(move_cfg) => actions::MoveAction::new(move_cfg),
+        _ => todo!()
+    }
+}
