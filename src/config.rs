@@ -1,5 +1,5 @@
+use serde::Deserialize;
 use std::fs;
-use serde::{Deserialize};
 
 fn default_true() -> bool {
     true
@@ -27,6 +27,7 @@ pub struct Rule {
     pub recursive: bool,
     pub max_depth: Option<usize>,
     pub filters: Filters,
+    pub action: Action,
 }
 
 #[derive(Debug, Deserialize)]
@@ -39,8 +40,6 @@ pub struct Filters {
     pub name: Option<NameFilterConfig>,
     pub regex: Option<String>,
     pub empty: Option<bool>,
-
-    pub action: Action,
 }
 
 #[derive(Debug, Deserialize)]
@@ -60,7 +59,7 @@ pub struct NameFilterConfig {
 }
 
 #[derive(Debug, Deserialize)]
-#[serde(tag= "type", rename_all = "lowercase")]
+#[serde(tag = "type", rename_all = "lowercase")]
 pub enum Action {
     Move(MoveConfig),
     Delete,
@@ -83,9 +82,11 @@ pub struct CompressConfig {
 
 impl Config {
     pub fn load(path: &str) -> Result<Self, String> {
-        let config_str = fs::read_to_string(path).map_err(|e| format!("Failed to load config file: {}", e))?;
+        let config_str =
+            fs::read_to_string(path).map_err(|e| format!("Failed to load config file: {}", e))?;
 
-        let config: Config = serde_yaml::from_str(&config_str).map_err(|e| format!("Invalid YAML format: {}", e))?;
+        let config: Config =
+            serde_yaml::from_str(&config_str).map_err(|e| format!("Invalid YAML format: {}", e))?;
 
         Ok(config)
     }

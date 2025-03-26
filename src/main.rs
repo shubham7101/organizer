@@ -1,5 +1,5 @@
 use std::process;
-use organizer::{ run, config };
+use organizer::{config, run};
 
 fn main() {
     let config = match config::Config::load("config.yaml") {
