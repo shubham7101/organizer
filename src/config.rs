@@ -31,22 +31,21 @@ pub struct Rule {
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum Target {
+    Files,
+    Dirs,
+}
+
+#[derive(Debug, Deserialize)]
 pub struct Filters {
     #[serde(default = "default_target")]
     pub target: Target,
-
     pub extensions: Option<Vec<String>>,
     pub not_extensions: Option<Vec<String>>,
     pub name: Option<NameFilterConfig>,
     pub regex: Option<String>,
     pub empty: Option<bool>,
-}
-
-#[derive(Debug, Deserialize)]
-#[serde(rename_all = "lowercase")]
-pub enum Target {
-    Files,
-    Dirs,
 }
 
 #[derive(Debug, Deserialize)]
@@ -64,6 +63,7 @@ pub struct NameFilterConfig {
 #[serde(tag = "type", rename_all = "lowercase")]
 pub enum Action {
     Move(MoveConfig),
+    Copy(CopyConfig),
     Delete,
 }
 
@@ -77,6 +77,8 @@ pub struct MoveConfig {
 #[derive(Debug, Deserialize)]
 pub struct CopyConfig {
     pub destination: String,
+    #[serde(default)]
+    pub over_ride: bool,
 }
 
 #[derive(Debug, Deserialize)]

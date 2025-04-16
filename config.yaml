@@ -2,13 +2,13 @@ log_file: "logs/app.log"
 rules:
   - name: "Organize Images"
     locations:
-      - "/data/data/com.termux/files/home/storage/downloads/i"
+      - "/data/data/com.termux/files/home/storage/downloads/test"
     recursive: true
     filters:
       extensions: ["png", "jpg", "jpeg"]
       name:
         contains: ["car"]
     action:
-      type: move
-      destination: "/data/data/com.termux/files/home/storage/downloads/Images"
-      over_ride: true
+      type: copy
+      destination: "/data/data/com.termux/files/home/storage/downloads/test/results"
+      over_ride: false

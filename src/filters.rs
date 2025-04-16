@@ -1,16 +1,36 @@
-use crate::utils;
+use crate::{config, utils};
+
+pub fn parse(filters_cfg: &config::Filters) -> Vec<Box<dyn Filter + '_>> {
+    let mut filters: Vec<Box<dyn Filter>> = Vec::new();
+
+    if let Some(ref exts) = filters_cfg.extensions {
+        filters.push(Box::new(ExtensionFilter::new(exts, false)));
+    } else if let Some(ref not_exts) = filters_cfg.not_extensions {
+        filters.push(Box::new(ExtensionFilter::new(not_exts, true)));
+    }
+
+    if let Some(ref name_filter) = filters_cfg.name {
+        filters.push(Box::new(NameFilter::new(
+            name_filter.starts_with.as_ref(),
+            name_filter.ends_with.as_ref(),
+            name_filter.contains.as_ref(),
+        )));
+    }
+
+    filters
+}
 
 pub trait Filter {
     fn matches(&self, file_meta_data: &utils::FileMetaData) -> bool;
 }
 
-pub struct ExtensionFilter<'a> {
+struct ExtensionFilter<'a> {
     extensions: &'a Vec<String>,
     negate: bool,
 }
 
 impl<'a> ExtensionFilter<'a> {
-    pub fn new(extensions: &'a Vec<String>, negate: bool) -> Self {
+    fn new(extensions: &'a Vec<String>, negate: bool) -> Self {
         Self { extensions, negate }
     }
 }
@@ -32,14 +52,14 @@ impl<'a> Filter for ExtensionFilter<'a> {
     }
 }
 
-pub struct NameFilter<'a> {
+struct NameFilter<'a> {
     starts_with_filter: Option<&'a Vec<String>>,
     ends_with_filter: Option<&'a Vec<String>>,
     contains_filter: Option<&'a Vec<String>>,
 }
 
 impl<'a> NameFilter<'a> {
-    pub fn new(
+    fn new(
         starts_with_filter: Option<&'a Vec<String>>,
         ends_with_filter: Option<&'a Vec<String>>,
         contains_filter: Option<&'a Vec<String>>,
