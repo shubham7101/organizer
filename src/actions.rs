@@ -7,6 +7,7 @@ pub fn parse(action_cfg: &config::Action) -> Box<dyn Action + '_> {
     return match action_cfg {
         config::Action::Move(move_cfg) => Box::new(MoveAction::new(&move_cfg.destination, move_cfg.over_ride)),
         config::Action::Copy(copy_cfg) => Box::new(CopyAction::new(&copy_cfg.destination, copy_cfg.over_ride)),
+        config::Action::Delete => Box::new(DeleteAction::new()),
         _ => todo!(),
     };
 }
@@ -130,6 +131,44 @@ impl<'a> Action for CopyAction<'a> {
             }
             if let Err(err) = fs::copy(&meta_data.path, dest_path) {
                 errors.push(err);
+            }
+        }
+
+        if errors.is_empty() {
+            Ok(())
+        } else {
+            Err(errors)
+        }
+    }
+}
+
+struct DeleteAction;
+
+impl DeleteAction {
+    fn new() -> Self {
+        DeleteAction{}
+    }
+}
+
+impl Action for DeleteAction {
+    fn display_proposed(&self, files_meta_data: &[utils::FileMetaData]) {
+        for meta_data in files_meta_data {
+            println!("{meta_data:?}");
+        }
+    }
+
+    fn execute(&self, files_meta_data: &[utils::FileMetaData]) -> Result<(), Vec<io::Error>> {
+        let mut errors = vec![];
+
+        for meta_data in files_meta_data {
+            if meta_data.is_file {
+                if let Err(err) = fs::remove_file(&meta_data.path) {
+                    errors.push(err);
+                }
+            } else if meta_data.is_dir {
+                if let Err(err) = fs::remove_dir_all(&meta_data.path) {
+                    errors.push(err);
+                }
             }
         }
 

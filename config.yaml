@@ -3,12 +3,12 @@ rules:
   - name: "Organize Images"
     locations:
       - "/data/data/com.termux/files/home/storage/downloads/test"
-    recursive: true
+    recursive: false
     filters:
       extensions: ["png", "jpg", "jpeg"]
       name:
         contains: ["car"]
     action:
-      type: copy
-      destination: "/data/data/com.termux/files/home/storage/downloads/test/results"
-      over_ride: false
+      type: delete
+      # destination: "/data/data/com.termux/files/home/storage/downloads/test/results"
+      # over_ride: false
